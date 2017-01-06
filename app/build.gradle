@@ -1,0 +1,49 @@
+apply plugin: 'com.android.application'
+
+android {
+  compileSdkVersion 25
+  buildToolsVersion "24.0.0"
+  defaultConfig {
+    applicationId "flobee.pageradapterex"
+    minSdkVersion 21
+    targetSdkVersion 25
+    versionCode 1
+    versionName "1.0"
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+  }
+  testOptions {
+    unitTests.returnDefaultValues = true // add this so Android methods in Android testing library don't just throw an exception, will return some default value.
+  }
+}
+
+dependencies {
+  compile fileTree(dir: 'libs', include: ['*.jar'])
+  androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    exclude group: 'com.android.support', module: 'support-annotations'
+  })
+  androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'// add so I can use intents so that I can get an instance of the activity and pass the ViewPager to idling resource.
+  compile 'com.android.support.test.espresso:espresso-idling-resource:2.2.2'// add so I can use idling resource, wait for ViewPager to finish moving to next page before testing. Bloats release.
+  androidTestCompile 'com.android.support.test:runner:0.5'// add so I can use Espresso-Intents
+  androidTestCompile 'com.android.support.test:rules:0.5' // add so I can use Espresso-Intents
+  androidTestCompile 'com.android.support:support-annotations:25.1.0'// add so I can use Espresso-Intents
+  // Had a warning: Warning:Conflict with dependency 'com.android.support:support-annotations'. Resolved versions for app (25.1.0) and test app (23.1.1) differ.
+  // So I added support-annotations:25.1.0
+
+  compile 'com.android.support:appcompat-v7:25.1.0'
+  testCompile 'junit:junit:4.12'
+  testCompile 'org.mockito:mockito-core:1.10.19' //add this in if I want to use mockito.Mock iow @Mock
+  testCompile ('org.powermock:powermock-module-junit4:1.6.2') { // add this so @RunWith(PowerMockRunner.class) works, then use whenNew, suppress, constructorsDeclaredIn
+    exclude module: 'hamcrest-core'
+    exclude module: 'objenesis'
+  }
+  testCompile ('org.powermock:powermock-api-mockito:1.6.2') { // add this so PowerMockito works, then use whenNew, suppress, constructorsDeclaredIn
+    exclude module: 'hamcrest-core'
+    exclude module: 'objenesis'
+  }
+}
