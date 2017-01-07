@@ -1,24 +1,19 @@
 package flobee.pageradapterex;
 
 
-import android.support.test.espresso.PerformException;
-import android.support.test.espresso.UiController;
-import android.support.test.espresso.ViewAction;
-import android.support.test.espresso.util.HumanReadables;
-import android.support.test.espresso.util.TreeIterables;
-import android.support.test.rule.ActivityTestRule;
+import android.app.Activity;
+import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
-import android.view.View;
+import android.support.v4.view.ViewPager;
 
-import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.TimeoutException;
-
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.Espresso.registerIdlingResources;
+import static android.support.test.espresso.Espresso.unregisterIdlingResources;
 import static android.support.test.espresso.action.ViewActions.swipeLeft;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
@@ -30,7 +25,8 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.AllOf.allOf;
 
 @RunWith(AndroidJUnit4.class)
-public class StraightLineTest {
+public class StraightLineWIRTest {
+  private ViewPagerIdlingResource idlingResource;
 
   private static final String shmi_s   = "Shmi Skywalker";
   private static final String anakin_s = "Anakin Skywalker";
@@ -38,49 +34,79 @@ public class StraightLineTest {
   private static final String jacen_s  = "Jacen Solo";
   private static final String allana_s = "Allana Solo";
 
+  // launch flag should be false so that it is not lazily instantiated. Instead I
+  // launch the activity in startActivity().
   @Rule
-  public ActivityTestRule mActivityRule = new ActivityTestRule(MainActivity.class);
+  public IntentsTestRule<MainActivity> mActivityRule =
+    new IntentsTestRule(MainActivity.class, true, false);
 
-  @Test
-  public void oneSwipe () {
-    onView(isRoot()).perform(swipeLeft());
-    waitForViewPagerResponse(2000);
-    onView(allOf(withId(R.id.character_name),withText(anakin_s))).
-      check(matches(isCompletelyDisplayed()));
-    onView(allOf(withId(R.id.character_name),withText(shmi_s))).
-      check(matches(not(isDisplayed())));
+  @After
+  public void tearDownIdlingResource () {
+    unregisterIdlingResources(idlingResource);
   }
 
   @Test
-  public void fiveSwipes () {
+  public void firstSwipe () {
+
+    Activity activity = startActivity();
+
+    idlingResource = new ViewPagerIdlingResource((ViewPager)activity.
+      findViewById(R.id.view_pager), "VPIR_0");
+    registerIdlingResources(idlingResource);
+
+
     onView(isRoot()).perform(swipeLeft());
+    //idlingResource.setIdle(false);
+    //waitForViewPagerResponse(1000);
+    onView(allOf(withId(R.id.character_name),withText(anakin_s))).
+      check(matches(isCompletelyDisplayed()));
+    onView(allOf(withId(R.id.character_name),withText(shmi_s))).
+      check(matches(not(isCompletelyDisplayed())));
+  }
+
+  @Test
+  public void fifthSwipe () {
+    Activity activity = startActivity();
+
+    idlingResource = new ViewPagerIdlingResource((ViewPager)activity.
+      findViewById(R.id.view_pager), "VPIR_0");
+    registerIdlingResources(idlingResource);
+
     onView(isRoot()).perform(swipeLeft());
-    waitForViewPagerResponse(1000);
+    onView(allOf(withId(R.id.character_name),withText(anakin_s))).
+      check(matches(isCompletelyDisplayed()));
+
+
+    onView(isRoot()).perform(swipeLeft());
+
     onView(allOf(withId(R.id.character_name),withText(leia_o))).
       check(matches(isCompletelyDisplayed()));
     onView(allOf(withId(R.id.character_name),withText(anakin_s))).
       check(matches(not(isDisplayed())));
 
     onView(isRoot()).perform(swipeLeft());
-    waitForViewPagerResponse(1000);
+
     onView(allOf(withId(R.id.character_name),withText(jacen_s))).
       check(matches(isCompletelyDisplayed()));
     onView(allOf(withId(R.id.character_name),withText(leia_o))).
       check(matches(not(isDisplayed())));
 
     onView(isRoot()).perform(swipeLeft());
-    waitForViewPagerResponse(1000);
+
     onView(allOf(withId(R.id.character_name),withText(allana_s))).
       check(matches(isCompletelyDisplayed()));
     onView(allOf(withId(R.id.character_name),withText(jacen_s))).
       check(matches(not(isDisplayed())));
 
     onView(isRoot()).perform(swipeLeft());
-    waitForViewPagerResponse(1000);
+
     onView(allOf(withId(R.id.character_name),withText(allana_s))).
       check(matches(isCompletelyDisplayed()));
     onView(allOf(withId(R.id.character_name),withText(jacen_s))).
       check(matches(not(isDisplayed())));
+  }
+  private MainActivity startActivity() {
+    return mActivityRule.launchActivity(null);
   }
 
   public void waitForViewPagerResponse(long millis) {
@@ -88,48 +114,5 @@ public class StraightLineTest {
     final long endTime = startTime + millis;
     do {}
     while (System.currentTimeMillis() < endTime);
-  }
-
-  //an example of waitForMatch()
-  //onView(isRoot())
-  //.perform(waitForMatch(allOf(isDisplayed(), withText("apple 0b")),1500));
-  public static ViewAction waitForMatch(final Matcher<View> matcher, final long millis) {
-    return new ViewAction() {
-      @Override
-      public Matcher<View> getConstraints() {
-        return isRoot(); // I only work on the root view!
-      }
-
-      @Override
-      public String getDescription() {
-        return "wait for a specific view with id <" + matcher.toString() + "> during " + millis +
-          " millis.";
-      }
-
-      @Override
-      public void perform(final UiController uiController, final View view) {
-        Log.i("ATAG", "in perform");
-        uiController.loopMainThreadUntilIdle();
-        final long startTime = System.currentTimeMillis();
-        final long endTime = startTime + millis;
-        do {
-          for (View child : TreeIterables.breadthFirstViewTraversal(view)) {
-            Log.i("ATAG", "iterating through tree");
-            if (matcher.matches(child)) {
-              Log.i("ATAG", "view");
-              return;
-            }
-          }
-          uiController.loopMainThreadForAtLeast(50);
-        }
-        while (System.currentTimeMillis() < endTime);
-
-        throw new PerformException.Builder() // timeout happens
-          .withActionDescription(this.getDescription())
-          .withViewDescription(HumanReadables.describe(view))
-          .withCause(new TimeoutException())
-          .build();
-      }
-    };
   }
 }

@@ -21,11 +21,16 @@ public class MainActivity extends AppCompatActivity {
     //ViewGroup root = (ViewGroup)findViewById(R.id.main_layout);
     //root.addView(characterView);
 
+    //ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+    //DataAdapter dataAdapter = new DataAdapter();
+    //dataAdapter.addCharacters(SkywalkerLineages.getLineageFor("Allana Solo"));
+    //ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(dataAdapter);
+    //viewPager.setAdapter(viewPagerAdapter);
+
     ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
     DataAdapter dataAdapter = new DataAdapter();
     dataAdapter.addCharacters(SkywalkerLineages.getLineageFor("Allana Solo"));
     ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(dataAdapter);
     viewPager.setAdapter(viewPagerAdapter);
-
   }
 }
